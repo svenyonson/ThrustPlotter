@@ -17,6 +17,9 @@ I used a piece of extrusion for the rails and a mini-gantry for the platform - b
 - ESP32 micro controller
 - 1kg Load Cell with HX711 amplifier 
 
+## Wiring Diagram
+![Wiring Diagram](<./assets/images/Wiring Diagram.png>)
+
 ## Toolchain
 - Visual Studio Code
 - PlatformIO (vscode plugin)
@@ -61,7 +64,7 @@ The ESP32 application has the following components/features:
 - On your computer or phone, change your WiFi connection to ThrustPlotter-Config (no password)
 - A popup window should appear:
 
-- ![Thrust Plotter Appliance](<./assets/images/WiFi Config.png>)
+- ![WiFi Config](<./assets/images/WiFi Config.png>)
 - Enter the SSID, password, and timezone - then click Save and Connect (we'll come back for the calibration later)
 - The popup is dismissed, the ESP32 reboots and connects to your WiFi, and your computer reconnects to its last WiFi SSID.
 - If the ESP32 has successfully connected to your WiFi, the blue LED will be solid blue.
@@ -72,10 +75,10 @@ The ESP32 application has the following components/features:
 At this point you can use the appliance, but your readings will be way off.
 - Find a small object of a known weight (weigh it on your kitchen scale)
 - Turn the appliance on end so that you can place the weight on the load cell when directed to.
-- ![Thrust Plotter Calibration](<./assets/images/Calibration Position.jpg>)
+- ![Thrust Plotter Calibration Position](<./assets/images/Calibration Position.jpg>)
 - Press and hold the BOOT button for 3 seconds. As before, the Thrust Plotter Config screen appears. 
 - Click on the Calibration tab
-- ![Thrust Plotter Calibration](<./assets/images/Calibration Screen.png>)
+- ![Thrust Plotter Calibration Screen](<./assets/images/Calibration Screen.png>)
 - Enter the weight of the known object
 - Click Start Calibration
 - Follow the onscreen instructions
