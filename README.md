@@ -76,7 +76,9 @@ At this point you can use the appliance, but your readings will be way off.
 - Find a small object of a known weight (weigh it on your kitchen scale)
 - Turn the appliance on end so that you can place the weight on the load cell when directed to.
 - ![Thrust Plotter Calibration Position](<./assets/images/Calibration Position.jpg>)
-- Press and hold the BOOT button for 3 seconds. As before, the Thrust Plotter Config screen appears. 
+- Press and hold the BOOT button for 3 seconds. 
+- On your computer or phone, change your WiFi connection to ThrustPlotter-Config (no password)
+- As before, the Thrust Plotter Config screen appears. 
 - Click on the Calibration tab
 - ![Thrust Plotter Calibration Screen](<./assets/images/Calibration Screen.png>)
 - Enter the weight of the known object
