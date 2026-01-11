@@ -116,6 +116,7 @@ bool connectToSavedWiFi() {
         if (!MDNS.begin("thrustplotter")) {
             Serial.println("Error setting up MDNS responder!");
         } else {
+            MDNS.addService("http", "tcp", 80); 
             Serial.println("mDNS responder started. Access at http://thrustplotter.local");
         }
         

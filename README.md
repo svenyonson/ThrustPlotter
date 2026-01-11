@@ -42,32 +42,8 @@ The ESP32 application has the following components/features:
     - Normally, you would need to run a separate application, connected to an IDE, to perform the calibration step. This utility is built into the captive portal screen. You can re-run the calibration as often as you like.
 
 ### Project Structure
+![Thrust Plotter Appliance](<./assets/images/Project Structure.png>)
 
-project_root/
-├── README.md
-├── platformio.ini
-├── data/                      # Files to upload to LittleFS
-│   └── web/                   # Web application files
-│       └── index.html
-│       
-├── include/
-│   ├── config.h              # Global configuration constants
-│   ├── wifi_manager.h        # WiFi configuration
-│   ├── config_page.h         # WiFi config page HTML
-│   ├── load_cell.h           # HX711 load cell interface
-│   ├── run_manager.h         # Run configuration and control
-│   ├── data_logger.h         # CSV file operations
-│   ├── upload_page.h         # Upload page HTML - for initial upload if index.html not present
-│   ├── web_server.h          # Main web application server
-│   └── chart_manager.h       # Chart configuration storage
-└── src/
-    ├── main.cpp              # Main program
-    ├── wifi_manager.cpp      # WiFi logic (existing)
-    ├── load_cell.cpp         # Load cell reading
-    ├── run_manager.cpp       # Run lifecycle management
-    ├── data_logger.cpp       # Data logging to CSV
-    ├── web_server.cpp        # Web server and API endpoints
-    └── chart_manager.cpp     # Chart config persistence
 
 ### Build & Setup Instructions
 - Prerequisites
