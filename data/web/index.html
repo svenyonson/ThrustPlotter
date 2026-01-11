@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thrust Plotter</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.active {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e1e8ed;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .run-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .run-item {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .run-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .run-info p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .run-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        #chart_div {
+            width: 100%;
+            height: 500px;
+            margin: 1rem 0;
+        }
+
+        .file-selector {
+            display: grid;
+            gap: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e1e8ed;
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        .file-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .file-checkbox:hover {
+            background: #f9fafb;
+        }
+
+        .file-checkbox input {
+            width: auto;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .container2 { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .item { margin-left: 20px; border-left: 1px solid #ddd; padding: 5px 0 5px 10px; }
+        .folder { font-weight: bold; color: #2c3e50; cursor: pointer; }
+        .folder::before { content: "📁 "; }
+        .file::before { content: "📄 "; }
+        .actions { display: inline-block; margin-left: 10px; opacity: 0.3; transition: 0.2s; }
+        .item:hover > .actions { opacity: 1; }
+        button { cursor: pointer; margin-right: 5px; font-size: 12px; padding: 2px 6px; }
+        .btn-dl { background: #e1f5fe; border: 1px solid #03a9f4; }
+        .btn-rn { background: #fff3e0; border: 1px solid #ff9800; }
+        .btn-del { background: #ffebee; border: 1px solid #f44336; color: #c62828; }
+
+        .upload-form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        input[type="file"] { margin: 10px 0; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .message { margin-top: 15px; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .file-list { margin-top: 20px; }
+        .file-item { padding: 8px; background: white; margin: 5px 0; border-radius: 4px; }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Thrust Plotter</h1>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Not Running</span>
+        </div>
+        <div id="currentRunInfo"></div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="runs">Runs</button>
+            <button class="tab" data-tab="chart">Charts</button>
+            <button class="tab" data-tab="explorer">Explorer</button>
+            <button class="tab" data-tab="upload">Upload</button>
+        </div>
+
+        <!-- Runs Tab -->
+        <div class="tab-content active" id="runs-tab">
+            <div class="card">
+                <h2>Create New Run</h2>
+                <div class="form-group">
+                    <label for="runName">Run Name</label>
+                    <input type="text" id="runName" placeholder="e.g., propeller_test_1">
+                </div>
+                <div class="form-group">
+                    <label for="runNotes">Notes</label>
+                    <textarea id="runNotes" placeholder="Description, propeller type, conditions, etc."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="createRun()">Create Run</button>
+            </div>
+
+            <div class="card">
+                <h2>Your Runs</h2>
+                <div id="runsList"></div>
+            </div>
+        </div>
+
+        <!-- Chart Tab -->
+        <div class="tab-content" id="chart-tab">
+            <div class="card">
+                <h2>Visualize Data</h2>
+                <div class="form-group">
+                    <label>Select Run Data Files</label>
+                    <div class="file-selector" id="fileSelector"></div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="generateChart()">Generate Chart</button>
+                    <button id="batchDeleteBtn" class="btn btn-danger" style="display: none;" onclick="deleteSelectedFiles()">Delete Selected</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="chart_div"></div>
+            </div>
+        </div>
+
+        <!-- Explorer Tab -->
+        <div class="tab-content" id="explorer-tab">
+            <div class="card">
+                <h2>File Explorer</h2>
+
+                <div class="container2">
+                    <div id="explorer">Loading...</div>
+                </div>
+
+                <script>
+                    async function fetchFiles() {
+                        const response = await fetch('/listfiles');
+                        const data = await response.json();
+                        const container = document.getElementById('explorer');
+                        container.innerHTML = '';
+                        renderTree(data, container, "");
+                    }
+
+                    function renderTree(items, parentElement, currentPath) {
+                        items.forEach(item => {
+                            const fullPath = currentPath + "/" + item.name;
+                            const div = document.createElement('div');
+                            div.className = 'item';
+
+                            const label = document.createElement('span');
+                            label.className = item.type === 'directory' ? 'folder' : 'file';
+                            label.innerText = item.name + (item.size ? ` (${item.size} bytes)` : '');
+                            div.appendChild(label);
+
+                            // Action Buttons
+                            const actions = document.createElement('span');
+                            actions.className = 'actions';
+                            
+                            if (item.type === 'file') {
+                                actions.innerHTML += `<button class="btn-dl" onclick="downloadFile('${fullPath}')">Download</button>`;
+                            }
+                            actions.innerHTML += `<button class="btn-rn" onclick="renameItem('${fullPath}')">Rename</button>`;
+                            actions.innerHTML += `<button class="btn-del" onclick="deleteItem('${fullPath}')">Delete</button>`;
+                            
+                            div.appendChild(actions);
+                            parentElement.appendChild(div);
+
+                            if (item.type === 'directory' && item.contents) {
+                                renderTree(item.contents, div, fullPath);
+                            }
+                        });
+                    }
+
+                    function downloadFile(path) { window.location.href = `/download?path=${path}`; }
+
+                    async function deleteItem(path) {
+                        if (confirm(`Delete ${path}?`)) {
+                            await fetch(`/delete?path=${path}`, { method: 'DELETE' });
+                            fetchFiles();
+                        }
+                    }
+
+                    async function renameItem(path) {
+                        const newName = prompt("Enter new name (full path):", path);
+                        if (newName && newName !== path) {
+                            await fetch(`/rename?old=${path}&new=${newName}`, { method: 'POST' });
+                            fetchFiles();
+                        }
+                    }
+
+                    fetchFiles();
+                </script>
+            </div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div class="tab-content" id="upload-tab">
+            <div class="card">
+                <h2>Web File Upload</h2>
+
+                <p>Upload your web application files (HTML, CSS, JS) to /web directory.</p>
+                
+                <div class="upload-form">
+                    <h3>Upload File</h3>
+                    <input type="file" id="fileInput">
+                    <button onclick="uploadFile()">Upload</button>
+                    <div id="message"></div>
+                </div>
+                
+                <div class="file-list">
+                    <h3>Current Files</h3>
+                    <div id="fileList">Loading...</div>
+                </div>
+                
+                <script>
+                    function uploadFile() {
+                        const fileInput = document.getElementById('fileInput');
+                        const file = fileInput.files[0];
+                        const msg = document.getElementById('message');
+                        
+                        if (!file) {
+                            msg.className = 'message error';
+                            msg.textContent = 'Please select a file';
+                            return;
+                        }
+                        
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        
+                        msg.className = 'message';
+                        msg.textContent = 'Uploading...';
+                        
+                        fetch('/upload', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            msg.className = "message success";
+                            msg.textContent = "File uploaded: " + file.name;
+                            fileInput.value = null;
+                            loadFileList();
+                        })
+                        .catch(error => {
+                            msg.className = "message error";
+                            msg.textContent = "Upload failed: " + error;
+                        });
+                    }
+                    
+                    function loadFileList() {
+                        fetch('/api/files')
+                            .then(response => response.json())
+                            .then(files => {
+                                const list = document.getElementById('fileList');
+                                if (files.length === 0) {
+                                    list.innerHTML = "<p>No files uploaded yet</p>";
+                                } else {
+                                    list.innerHTML = files.map(f => 
+                                        "<div class=\"file-item\">" + f + "</div>"
+                                    ).join("");
+                                }
+                            });
+                    }
+                    
+                    loadFileList();
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChart = null;
+        let allDataFiles = [];
+        let googleChartsLoaded = false;
+
+        // Load Google Charts when available
+        function initGoogleCharts() {
+            if (typeof google !== 'undefined' && google.charts) {
+                google.charts.load('current', {'packages':['corechart']});
+                google.charts.setOnLoadCallback(function() {
+                    googleChartsLoaded = true;
+                    console.log('Google Charts loaded');
+                });
+            } else {
+                // Retry if google isn't loaded yet
+                setTimeout(initGoogleCharts, 100);
+            }
+        }
+        
+        initGoogleCharts();
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tabName + '-tab').classList.add('active');
+                
+                if (tabName === 'chart') {
+                    loadAllDataFiles();
+                }
+                else if (tabName === 'explorer') {
+                    fetchFiles();
+                }
+                else if (tabName === 'runs') {
+                    loadRuns();
+                }
+            });
+        });
+
+        // Initialize when page loads
+        let currentRunState = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRuns();
+            checkCurrentRun();
+            setInterval(checkCurrentRun, 2000);
+        });
+
+        async function loadRuns() {
+            try {
+                const response = await fetch('/api/runs');
+                const contentType = response.headers.get('content-type');
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Expected JSON but got:', text.substring(0, 200));
+                    showAlert('error', 'API error: Server returned HTML instead of JSON');
+                    return;
+                }
+                
+                const text = await response.text();
+                //console.log('Runs response:', text);
+                
+                const runs = JSON.parse(text);
+                //console.log('Parsed runs:', runs);
+                
+                const runsList = document.getElementById('runsList');
+                
+                if (runs.length === 0) {
+                    runsList.innerHTML = '<div class="empty-state"><h3>No Runs Yet</h3><p>Create your first run above to get started</p></div>';
+                    return;
+                }
+                
+                runsList.innerHTML = runs.map(run => {
+                    const isCurrentRun = currentRunState && currentRunState.isActive && currentRunState.name === run.name;
+                    
+                    return `
+                    <div class="run-item">
+                        <div class="run-info">
+                            <h3>${run.name}${isCurrentRun ? ' <span style="color: #10b981;">● ACTIVE</span>' : ''}</h3>
+                            <p>${run.notes || 'No notes'}</p>
+                            <p style="font-size: 0.8rem; color: #9ca3af;">Created: ${run.created}</p>
+                        </div>
+                        <div class="run-actions">
+                            ${isCurrentRun ? 
+                                '<button class="btn btn-danger btn-small" onclick="stopRun()">Stop</button>' :
+                                '<button class="btn btn-success btn-small" onclick="startRun(\'' + run.name + '\')">Start</button>'
+                            }
+                            <button class="btn btn-danger btn-small" onclick="deleteRun('${run.name}')" ${isCurrentRun ? 'disabled' : ''}>Delete</button>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading runs:', error);
+                showAlert('error', 'Failed to load runs');
+            }
+        }
+
+        async function createRun() {
+            const name = document.getElementById('runName').value.trim();
+            const notes = document.getElementById('runNotes').value.trim();
+            
+            if (!name) {
+                alert('Please enter a run name');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/runs', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name, notes})
+                });
+                
+                if (response.ok) {
+                    document.getElementById('runName').value = '';
+                    document.getElementById('runNotes').value = '';
+                    loadRuns();
+                    showAlert('success', 'Run created successfully!');
+                }
+            } catch (error) {
+                showAlert('error', 'Failed to create run');
+            }
+        }
+
+        async function startRun(name) {
+            try {
+                const response = await fetch(`/api/runs/${name}/start`, {method: 'POST'});
+                if (response.ok) {
+                    showAlert('success', `Run "${name}" started!`);
+                    checkCurrentRun();
+                }
+            } catch (error) {
+                showAlert('error', 'Failed to start run');
+            }
+        }
+
+        async function stopRun() {
+            try {
+                const response = await fetch('/api/runs/stop', {method: 'POST'});
+                if (response.ok) {
+                    showAlert('success', 'Run stopped');
+                    checkCurrentRun();
+                    loadRuns();
+                }
+            } catch (error) {
+                showAlert('error', 'Failed to stop run');
+            }
+        }
+
+        async function deleteRun(name) {
+            if (!confirm(`Delete run "${name}" and all its data?`)) return;
+            
+            try {
+                const response = await fetch(`/api/runs/${name}`, {method: 'DELETE'});
+                if (response.ok) {
+                    showAlert('success', 'Run deleted');
+                    loadRuns();
+                }
+            } catch (error) {
+                showAlert('error', 'Failed to delete run');
+            }
+        }
+
+        async function checkCurrentRun() {
+            try {
+                const response = await fetch('/api/runs/current');
+                const contentType = response.headers.get('content-type');
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.error('API /api/runs/current returned non-JSON response');
+                    return;
+                }
+                
+                const text = await response.text();
+                //console.log('Current run response:', text);
+                
+                const run = JSON.parse(text);
+                //console.log('Parsed run:', run);
+                
+                // Store globally so loadRuns can access it
+                currentRunState = run;
+                
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+                const currentRunInfo = document.getElementById('currentRunInfo');
+                
+                if (run.isActive) {
+                    statusDot.classList.add('active');
+                    statusText.textContent = 'Recording';
+                    const elapsed = Math.floor((Date.now() - run.startTime) / 1000);
+                    currentRunInfo.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span><strong>${run.name}</strong> - ${elapsed}s</span>
+                            <button class="btn btn-danger btn-small" onclick="stopRun()">Stop Run</button>
+                        </div>
+                    `;
+                } else {
+                    statusDot.classList.remove('active');
+                    statusText.textContent = 'Not Running';
+                    currentRunInfo.innerHTML = '';
+                }
+                
+                // Refresh the runs list to update button states
+                if (run.isActive || (currentRunState && !currentRunState.isActive && run.isActive !== currentRunState.isActive)) {
+                    loadRuns();
+                }
+            } catch (error) {
+                console.error('Error checking current run:', error);
+            }
+        }
+
+        async function loadAllDataFiles() {
+            try {
+                const response = await fetch('/api/runs');
+                const runs = await response.json();
+                allDataFiles = [];
+                
+                for (const run of runs) {
+                    const filesResponse = await fetch(`/api/runs/${run.name}/files`);
+                    const files = await filesResponse.json();
+                    allDataFiles.push(...files.map(f => ({...f, runName: run.name})));
+                }
+                
+                displayFileSelector();
+            } catch (error) {
+                console.error('Error loading data files:', error);
+            }
+        }
+
+        function displayFileSelector() {
+            const selector = document.getElementById('fileSelector');
+            const deleteBtn = document.getElementById('batchDeleteBtn');
+            
+            if (allDataFiles.length === 0) {
+                selector.innerHTML = '<p style="text-align: center; color: #6b7280;">No data files available. Run some tests first!</p>';
+                deleteBtn.style.display = 'none'; // Hide if no files exist
+                return;
+            }
+            
+            selector.innerHTML = allDataFiles.map((file, index) => `
+                <label class="file-checkbox">
+                    <input type="checkbox" class="run-file-checkbox" value="${file.name}" data-run="${file.runName}">
+                    <span>${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
+                </label>
+            `).join('');
+
+            // Add event listeners to all new checkboxes
+            document.querySelectorAll('.run-file-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const anyChecked = document.querySelectorAll('.run-file-checkbox:checked').length > 0;
+                    deleteBtn.style.display = anyChecked ? 'inline-block' : 'none';
+                });
+            });
+        }
+        async function deleteSelectedFiles() {
+            const selectedCheckboxes = document.querySelectorAll('.run-file-checkbox:checked');
+            const count = selectedCheckboxes.length;
+
+            if (count === 0) return;
+
+            // Custom confirm dialog (or use your modal logic from earlier)
+            if (!confirm(`Are you sure you want to delete ${count} selected file(s)?`)) {
+                return;
+            }
+
+            try {
+                for (const cb of selectedCheckboxes) {
+                    const fileName = cb.value;
+                    const runName = cb.dataset.run;
+                    // Assuming the path structure based on your explorer: /runs/runName/fileName
+                    const path = `/data/runs/${fileName}`;
+                    
+                    await fetch(`/delete?path=${path}`, { method: 'DELETE' });
+                }
+                
+                showAlert('success', `Deleted ${count} files.`);
+                
+                // Refresh the list and hide the button
+                await loadAllDataFiles();
+                document.getElementById('batchDeleteBtn').style.display = 'none';
+                
+                // Clear the chart if it was displaying deleted data
+                document.getElementById('chart_div').innerHTML = '';
+                
+            } catch (error) {
+                console.error('Error deleting files:', error);
+                showAlert('error', 'Failed to delete some files.');
+            }
+        }
+        async function generateChart() {
+            const selected = Array.from(document.querySelectorAll('#fileSelector input:checked'))
+                .map(cb => cb.value);
+            
+            if (selected.length === 0) {
+                alert('Please select at least one data file');
+                return;
+            }
+
+            if (!googleChartsLoaded) {
+                showAlert('info', 'Loading charts library, please wait...');
+                setTimeout(() => generateChart(), 1000);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/charts/data', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({files: selected})
+                });
+                
+                const chartData = await response.json();
+                drawChart(chartData);
+            } catch (error) {
+                showAlert('error', 'Failed to generate chart');
+            }
+        }
+
+        function drawChart(chartData) {
+            const data = new google.visualization.DataTable();
+            data.addColumn('number', 'Time');
+            
+            chartData.datasets.forEach(dataset => {
+                data.addColumn('number', dataset.name);
+            });
+            
+            const maxLength = Math.max(...chartData.datasets.map(d => d.data.length));
+            let maxMs = 0;
+
+            for (let i = 0; i < maxLength; i++) {
+                const ms = i < chartData.datasets[0].data.length ? chartData.datasets[0].data[i][0] : null;
+                if (ms > maxMs) maxMs = ms;
+
+                let timeCell = null;
+                if (ms !== null) {
+                    const totalSeconds = Math.floor(ms / 1000);
+                    const minutes = Math.floor(totalSeconds / 60);
+                    const seconds = totalSeconds % 60;
+                    // Capture centiseconds for the tooltip (2 decimal places)
+                    const centiseconds = Math.floor((ms % 1000) / 10);
+                    
+                    const tooltipTime = minutes + ":" + 
+                                        (seconds < 10 ? "0" + seconds : seconds) + "." + 
+                                        (centiseconds < 10 ? "0" + centiseconds : centiseconds);
+                    
+                    timeCell = {v: ms, f: tooltipTime};
+                }
+
+                const row = [timeCell];
+                chartData.datasets.forEach(dataset => {
+                    row.push(i < dataset.data.length ? dataset.data[i][1] : null);
+                });
+                data.addRow(row);
+            }
+            
+            const options = {
+                title: 'Propeller Thrust Over Time',
+                hAxis: {
+                    title: 'Time (M:SS)',
+                    // Dynamically generate markers based on file length
+                    ticks: generateTicks(maxMs),
+                    gridlines: { color: '#e0e0e0' },
+                    minorGridlines: { count: 0 } // Keeps it clean
+                },
+                vAxis: {
+                    title: 'Thrust (grams)',
+                    viewWindow: { min: 0 } // Prevent the "overshoot" below zero
+                },
+                legend: { position: 'bottom' },
+                curveType: 'function',
+                pointSize: 2,
+                lineWidth: 2,
+                disabled_explorer: {
+                    actions: ['dragToZoom', 'rightClickToReset'],
+                    axis: 'horizontal',
+                    keepInBounds: true
+                },
+                explorer: {
+                    // 'dragToPan' enables the click-and-drag scrolling
+                    actions: ['dragToPan', 'rightClickToReset'],
+                    axis: 'horizontal',
+                    keepInBounds: true,
+                    maxZoomIn: 1, // Prevents accidental zooming with mouse wheel
+                    maxZoomOut: 1
+                },
+                chartArea: { width: '85%', height: '70%' }
+            };
+            
+            const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+
+        /**
+         * Generates ticks every 1, 2, or 5 seconds depending on duration
+         */
+        function generateTicks(maxMs) {
+            let ticks = [];
+            let interval;
+
+            // Determine interval based on duration (max 2 minutes as per your requirement)
+            if (maxMs <= 30000) {
+                interval = 2000; // Under 30s: Show every 2 seconds
+            } else if (maxMs <= 60000) {
+                interval = 5000; // Under 1 min: Show every 5 seconds
+            } else {
+                interval = 10000; // Up to 2 mins: Show every 10 seconds
+            }
+
+            for (let i = 0; i <= maxMs; i += interval) {
+                let totalSec = Math.floor(i / 1000);
+                let m = Math.floor(totalSec / 60);
+                let s = totalSec % 60;
+                ticks.push({v: i, f: m + ":" + (s < 10 ? "0" + s : s)});
+            }
+            return ticks;
+        }
+
+        function showAlert(type, message) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.querySelector('.container').insertBefore(alert, document.querySelector('.tabs'));
+            setTimeout(() => alert.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
